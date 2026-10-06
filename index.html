@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1020">
+<title>DSA Lab — Interactive Array & Search Simulator</title>
+<style>
+:root{
+  --bg:#07101f;--surface:#0d1729;--surface2:#111f35;--surface3:#162640;
+  --text:#eef4ff;--muted:#9fb0c9;--line:rgba(255,255,255,.09);
+  --accent:#6ee7ff;--accent2:#8b7cff;--good:#52e0a1;--warn:#ffd166;--bad:#ff7185;
+  --shadow:0 20px 60px rgba(0,0,0,.28);--radius:20px;--navh:72px;
+}
+[data-theme="light"]{
+  --bg:#f5f8fc;--surface:#fff;--surface2:#f0f5fb;--surface3:#e7eef8;
+  --text:#102039;--muted:#5d6c82;--line:rgba(16,32,57,.1);
+  --accent:#087ea4;--accent2:#6656d8;--good:#16885e;--warn:#9b6a00;--bad:#c43852;
+  --shadow:0 18px 45px rgba(22,48,83,.12);
+}
+*{box-sizing:border-box;scroll-behavior:smooth}
+html{scroll-padding-top:90px}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+button,input,select{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.container{width:min(1180px,92%);margin:auto}
+.navbar{height:var(--navh);position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.nav-inner{height:100%;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.3px}
+.logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06101e;box-shadow:0 8px 25px rgba(110,231,255,.18)}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{font-size:13px;color:var(--muted);padding:9px 10px;border-radius:10px;transition:.2s}
+.nav-links a:hover,.nav-links a.active{background:var(--surface2);color:var(--text)}
+.nav-actions{display:flex;gap:8px}
+.icon-btn,.menu-btn{width:40px;height:40px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;display:grid;place-items:center}
+.menu-btn{display:none}
+.hero{position:relative;overflow:hidden;padding:82px 0 70px;background:
+ radial-gradient(circle at 15% 15%,rgba(110,231,255,.13),transparent 27%),
+ radial-gradient(circle at 85% 25%,rgba(139,124,255,.15),transparent 30%)}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:45px;align-items:center}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+h1{font-size:clamp(42px,6vw,74px);line-height:1.02;letter-spacing:-3px;margin:18px 0}
+.gradient{background:linear-gradient(100deg,var(--accent),#fff 48%,var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:680px;color:var(--muted);font-size:17px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
+.meta{padding:9px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:13px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--text);padding:11px 15px;border-radius:12px;font-weight:750;transition:.2s;box-shadow:0 5px 15px rgba(0,0,0,.06)}
+.btn:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06101e;border:0}
+.btn.good{background:var(--good);color:#06101e;border:0}
+.btn.danger{background:transparent;color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--line))}
+.hero-card{padding:24px;border:1px solid var(--line);border-radius:26px;background:linear-gradient(145deg,var(--surface),var(--surface2));box-shadow:var(--shadow)}
+.code-window{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#070d18}
+.code-top{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:7px}
+.dot{width:9px;height:9px;border-radius:50%;background:#6b778a}
+.code{padding:20px;color:#b8c9e2;font:13px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace}
+.code .kw{color:#8b7cff}.code .fn{color:#6ee7ff}.code .num{color:#ffd166}.code .cm{color:#6d7f99}
+section{padding:78px 0}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:30px}
+.kicker{color:var(--accent);font-weight:850;font-size:12px;text-transform:uppercase;letter-spacing:1.4px}
+h2{font-size:clamp(29px,4vw,44px);letter-spacing:-1.5px;line-height:1.1;margin:7px 0}
+.lead{color:var(--muted);max-width:720px}
+.grid{display:grid;gap:18px}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:23px;box-shadow:0 8px 35px rgba(0,0,0,.06)}
+.card h3{margin:0 0 7px;font-size:18px}.card p{color:var(--muted);margin:7px 0}
+.feature-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:var(--surface2);margin-bottom:15px;color:var(--accent);font-size:20px}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface2)}
+.stat strong{font-size:25px;display:block}.stat span{font-size:12px;color:var(--muted)}
+.simulator{background:linear-gradient(145deg,var(--surface),var(--surface2));border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+.controls{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:end}
+.field{grid-column:span 3}.field.wide{grid-column:span 6}.field.small{grid-column:span 2}
+label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin:0 0 6px;text-transform:uppercase;letter-spacing:.6px}
+input,select{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:11px 12px;border-radius:11px;outline:none}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(110,231,255,.08)}
+.control-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.notice{margin-top:15px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);display:none;font-size:13px}
+.notice.show{display:block}.notice.error{color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,transparent)}.notice.success{color:var(--good);background:color-mix(in srgb,var(--good) 8%,transparent)}.notice.info{color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.visual{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:17px;background:var(--bg);min-height:100px}
+.array-strip{display:flex;gap:9px;flex-wrap:wrap;align-items:stretch}
+.cell{min-width:66px;padding:9px 10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);text-align:center;position:relative;transition:.35s cubic-bezier(.2,.8,.2,1)}
+.cell .idx{display:block;color:var(--muted);font-size:10px;margin-bottom:2px}.cell .val{font-weight:850;font-size:17px}
+.cell.current{border-color:var(--accent);box-shadow:0 0 0 3px rgba(110,231,255,.12);transform:translateY(-6px)}
+.cell.shift{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 11%,var(--surface));transform:translateX(8px)}
+.cell.found{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface));transform:scale(1.04)}
+.cell.mid{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(139,124,255,.12)}
+.cell.low{outline:2px dashed var(--good);outline-offset:2px}.cell.high{outline:2px dashed var(--bad);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:13px;color:var(--muted);font-size:11px}.legend span{display:flex;gap:5px;align-items:center}.legend i{width:9px;height:9px;border-radius:3px;background:var(--accent);display:inline-block}
+.step-panel{margin-top:18px;display:grid;grid-template-columns:1fr 240px;gap:14px}
+.step-box{padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--surface)}
+.step-title{font-weight:850}.step-text{color:var(--muted);font-size:13px;margin-top:5px}
+.progress{height:7px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:12px}.progress > span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.3s}
+.side-stat{padding:16px;border-radius:15px;background:var(--surface);border:1px solid var(--line)}.side-stat b{font-size:22px;display:block}
+.formula{padding:17px;border-left:3px solid var(--accent);background:var(--surface2);border-radius:0 13px 13px 0;margin-top:15px;font-family:ui-monospace,monospace}
+.memory-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;margin-top:15px}
+.mem{padding:11px 5px;border-radius:10px;border:1px solid var(--line);background:var(--surface);text-align:center;font-size:11px;transition:.3s}.mem b{display:block;font-size:13px}.mem.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface));transform:translateY(-4px)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px}.table{width:100%;border-collapse:collapse;min-width:620px}.table th,.table td{text-align:left;padding:13px 15px;border-bottom:1px solid var(--line);font-size:13px}.table th{background:var(--surface2);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.7px}.table tr:last-child td{border-bottom:0}
+.badge{display:inline-flex;padding:5px 8px;border-radius:8px;background:var(--surface2);font:800 11px ui-monospace,monospace;color:var(--accent)}
+.big-o{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.complexity-card{padding:18px;border:1px solid var(--line);border-radius:17px;background:var(--surface)}.complexity-card .o{font:900 32px ui-monospace,monospace}.bar{height:7px;background:var(--surface3);border-radius:99px;margin:14px 0 9px;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.timeline{display:grid;gap:10px}.timeline-item{display:flex;gap:13px}.num{width:28px;height:28px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--surface2);color:var(--accent);font-weight:850;font-size:12px}
+.code-copy{position:relative}.copy-btn{position:absolute;right:12px;top:12px}
+pre{margin:0;padding:18px;overflow:auto;background:#070d18;color:#c9d7eb;border-radius:15px;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace}
+footer{border-top:1px solid var(--line);padding:38px 0;color:var(--muted);font-size:13px}.footer-grid{display:flex;justify-content:space-between;gap:25px;flex-wrap:wrap}.footer-title{font-weight:850;color:var(--text);font-size:16px}
+.hidden{display:none!important}.muted{color:var(--muted)}.center{text-align:center}
+@media(max-width:900px){.nav-links{display:none}.menu-btn{display:grid}.hero-grid,.grid-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr 1fr}.controls .field,.controls .field.wide,.controls .field.small{grid-column:span 6}.step-panel{grid-template-columns:1fr}.stat-row{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){section{padding:55px 0}.hero{padding:55px 0}.hero h1{letter-spacing:-2px}.grid-3,.big-o{grid-template-columns:1fr}.controls .field,.controls .field.wide,.controls .field.small{grid-column:1/-1}.stat-row{grid-template-columns:1fr 1fr}.memory-grid{grid-template-columns:repeat(4,1fr)}.card,.simulator{padding:17px}.brand span{display:none}.nav-actions{margin-left:auto}.array-strip{gap:6px}.cell{min-width:58px}}
+</style>
+</head>
+<body>
+<header class="navbar">
+  <div class="container nav-inner">
+    <a class="brand" href="#home"><span class="logo">DS</span><span>DSA Lab</span></a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#home">Home</a><a href="#about">About</a><a href="#address">Address</a><a href="#insertion">Insertion</a><a href="#deletion">Deletion</a><a href="#linear">Linear Search</a><a href="#binary">Binary Search</a><a href="#complexity">Complexity</a><a href="#credits">Credits</a>
+    </nav>
+    <div class="nav-actions"><button class="icon-btn" id="themeBtn" title="Toggle theme">☼</button><button class="menu-btn" id="menuBtn">☰</button></div>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+ <div class="container hero-grid">
+  <div>
+   <span class="eyebrow">Interactive DSA Learning Lab</span>
+   <h1>Data Structures <span class="gradient">& Algorithms</span></h1>
+   <p>Interactive Array Operations and Searching Simulator — a visual learning environment for understanding array memory, insertion, deletion, linear search, and binary search.</p>
+   <div class="hero-meta"><span class="meta">Student: <b>Himanshu Saraf</b></span><span class="meta">Faculty: <b>Prof. Shilpa Bhalero</b></span></div>
+   <div class="btns"><a class="btn primary" href="#address">Launch Simulator →</a><a class="btn" href="#about">Explore Project</a></div>
+  </div>
+  <div class="hero-card">
+   <div class="code-window">
+    <div class="code-top"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+    <div class="code">
+      <div><span class="kw">function</span> <span class="fn">binarySearch</span>(A, target) {</div>
+      <div>&nbsp;&nbsp;<span class="kw">let</span> low = <span class="num">0</span>, high = A.length - <span class="num">1</span>;</div>
+      <div>&nbsp;&nbsp;<span class="kw">while</span> (low &lt;= high) {</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">let</span> mid = Math.floor((low + high) / <span class="num">2</span>);</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> (A[mid] === target) <span class="kw">return</span> mid;</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// narrow the search interval</span></div>
+      <div>&nbsp;&nbsp;}</div>
+      <div>&nbsp;&nbsp;<span class="kw">return</span> -<span class="num">1</span>;</div><div>}</div>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="about">
+ <div class="container">
+  <div class="section-head"><div><div class="kicker">01 · Project Overview</div><h2>Learn by seeing the algorithm move.</h2><p class="lead">This project combines theory with hands-on simulations so that array operations and searching logic are easier to understand, remember, and demonstrate.</p></div></div>
+  <div class="grid grid-3">
+   <div class="card"><div class="feature-icon">▦</div><h3>Memory Visualization</h3><p>Calculate an array element's address and see how consecutive elements occupy memory locations.</p></div>
+   <div class="card"><div class="feature-icon">↔</div><h3>Operations in Motion</h3><p>Watch insertion and deletion shift elements instead of only reading a static algorithm.</p></div>
+   <div class="card"><div class="feature-icon">⌕</div><h3>Search Step-by-Step</h3><p>Follow comparisons in linear search and track LOW, MID, and HIGH in binary search.</p></div>
+  </div>
+  <div class="stat-row" style="margin-top:18px">
+   <div class="stat"><strong>5</strong><span>Interactive modules</span></div><div class="stat"><strong>O(1)</strong><span>Constant-space algorithms</span></div><div class="stat"><strong>O(log n)</strong><span>Binary-search growth</span></div><div class="stat"><strong>100%</strong><span>Client-side operation</span></div>
+  </div>
+ </div>
+</section>
+
+<section id="address">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">02 · Array Address Calculation</div><h2>Where does an element live?</h2><p class="lead">For a one-dimensional array, elements are stored in consecutive memory locations. Enter the values below to calculate an address and inspect nearby memory cells.</p></div></div>
+ <div class="simulator">
+  <div class="controls">
+   <div class="field"><label>Base address</label><input id="base" type="number" value="1000"></div>
+   <div class="field"><label>Element size (bytes)</label><input id="esize" type="number" value="4" min="1"></div>
+   <div class="field"><label>Index</label><input id="aindex" type="number" value="3"></div>
+   <div class="field"><label>Lower bound</label><input id="lower" type="number" value="0"></div>
+  </div>
+  <div class="control-buttons"><button class="btn primary" id="calcAddress">Calculate Address</button><button class="btn" id="resetAddress">Reset</button></div>
+  <div class="notice" id="addressNotice"></div>
+  <div class="formula" id="addressFormula">Address(A[i]) = Base + (i − Lower Bound) × Element Size</div>
+  <div class="visual"><div class="array-strip" id="memoryCells"></div><div class="legend"><span><i></i> Selected address</span><span>Each cell = one array element</span></div></div>
+  <div class="step-panel"><div class="step-box"><div class="step-title" id="addressStepTitle">Ready to calculate</div><div class="step-text" id="addressStepText">Enter values and press Calculate Address.</div><div class="progress"><span id="addressProgress"></span></div></div><div class="side-stat"><span class="muted">Calculated address</span><b id="addressResult">—</b><small class="muted">byte address</small></div></div>
+ </div>
+</div>
+</section>
+
+<section id="insertion">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">03 · Array Insertion</div><h2>Insert an element without losing order.</h2><p class="lead">Choose a position and value. The simulator shows the elements that must move right before the new value is placed.</p></div></div>
+ <div class="simulator">
+  <div class="controls">
+   <div class="field wide"><label>Array (comma separated)</label><input id="insArray" value="10, 20, 30, 40"></div>
+   <div class="field"><label>Position / index</label><input id="insPos" type="number" value="2" min="0"></div>
+   <div class="field"><label>New element</label><input id="insVal" type="number" value="25"></div>
+  </div>
+  <div class="control-buttons"><button class="btn primary" id="startIns">Start Insertion</button><button class="btn" id="nextIns">Next Step</button><button class="btn" id="resetIns">Reset</button><button class="btn" id="randomIns">Random Array</button></div>
+  <div class="notice" id="insNotice"></div>
+  <div class="visual"><div class="muted" style="font-size:11px;margin-bottom:8px">CURRENT ARRAY</div><div class="array-strip" id="insCells"></div></div>
+  <div class="step-panel"><div class="step-box"><div class="step-title" id="insStepTitle">Ready</div><div class="step-text" id="insStepText">Start the simulation. Each Next Step advances one operation.</div><div class="progress"><span id="insProgress"></span></div></div><div class="side-stat"><span class="muted">Step</span><b id="insCount">0 / 0</b><span class="muted">Complexity: <b>O(n)</b></span></div></div>
+ </div>
+ <div class="grid grid-2" style="margin-top:18px"><div class="card"><h3>Algorithm</h3><div class="timeline"><div class="timeline-item"><span class="num">1</span><span>Validate the position and create space for one element.</span></div><div class="timeline-item"><span class="num">2</span><span>Move elements from the end toward the insertion position.</span></div><div class="timeline-item"><span class="num">3</span><span>Place the new element at the selected index.</span></div></div></div><div class="card"><h3>Complexity</h3><p>Best case: <span class="badge">O(1)</span> at the end. Average/worst case: <span class="badge">O(n)</span> due to shifting. Extra space: <span class="badge">O(1)</span> for an in-place conceptual array.</p></div></div>
+ </div>
+</section>
+
+<section id="deletion">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">04 · Array Deletion</div><h2>Remove an element, shift left.</h2><p class="lead">Deleting from the middle leaves a gap. The simulator moves following elements left until the array becomes compact again.</p></div></div>
+ <div class="simulator">
+  <div class="controls"><div class="field wide"><label>Array (comma separated)</label><input id="delArray" value="10, 20, 30, 40, 50"></div><div class="field"><label>Delete index</label><input id="delPos" type="number" value="2" min="0"></div></div>
+  <div class="control-buttons"><button class="btn primary" id="startDel">Start Deletion</button><button class="btn" id="nextDel">Next Step</button><button class="btn" id="resetDel">Reset</button><button class="btn" id="randomDel">Random Array</button></div>
+  <div class="notice" id="delNotice"></div>
+  <div class="visual"><div class="muted" style="font-size:11px;margin-bottom:8px">CURRENT ARRAY</div><div class="array-strip" id="delCells"></div></div>
+  <div class="step-panel"><div class="step-box"><div class="step-title" id="delStepTitle">Ready</div><div class="step-text" id="delStepText">Start the simulation to visualize left-shifting.</div><div class="progress"><span id="delProgress"></span></div></div><div class="side-stat"><span class="muted">Step</span><b id="delCount">0 / 0</b><span class="muted">Complexity: <b>O(n)</b></span></div></div>
+ </div>
+</div>
+</section>
+
+<section id="linear">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">05 · Linear Search</div><h2>Check one element at a time.</h2><p class="lead">Linear search starts at the first element and compares sequentially until it finds the target or reaches the end.</p></div></div>
+ <div class="simulator">
+  <div class="controls"><div class="field wide"><label>Array</label><input id="linArray" value="7, 14, 21, 28, 35, 42"></div><div class="field"><label>Target</label><input id="linTarget" type="number" value="28"></div></div>
+  <div class="control-buttons"><button class="btn primary" id="startLin">Start Search</button><button class="btn" id="nextLin">Next Comparison</button><button class="btn" id="resetLin">Reset</button><button class="btn" id="randomLin">Random Array</button></div>
+  <div class="notice" id="linNotice"></div>
+  <div class="visual"><div class="array-strip" id="linCells"></div><div class="legend"><span><i></i> Current comparison</span><span>Green = found</span></div></div>
+  <div class="step-panel"><div class="step-box"><div class="step-title" id="linStepTitle">Ready</div><div class="step-text" id="linStepText">Start and move one comparison at a time.</div><div class="progress"><span id="linProgress"></span></div></div><div class="side-stat"><span class="muted">Comparisons</span><b id="linCount">0</b><span id="linResult" class="muted">Not started</span></div></div>
+ </div>
+ <div class="card" style="margin-top:18px"><h3>Why it works</h3><p>Linear search does not require sorted data. It is simple and reliable, but its number of comparisons can grow with the array size.</p><div class="stat-row"><div class="stat"><strong>O(1)</strong><span>Best case</span></div><div class="stat"><strong>O(n)</strong><span>Average case</span></div><div class="stat"><strong>O(n)</strong><span>Worst case</span></div><div class="stat"><strong>O(1)</strong><span>Extra space</span></div></div></div>
+</div>
+</section>
+
+<section id="binary">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">06 · Binary Search</div><h2>Cut the search space in half.</h2><p class="lead">Binary search is faster because it discards half of the remaining range after each comparison. It requires a sorted array.</p></div></div>
+ <div class="simulator">
+  <div class="controls"><div class="field wide"><label>Sorted array</label><input id="binArray" value="5, 10, 15, 20, 25, 30, 35, 40, 45"></div><div class="field"><label>Target</label><input id="binTarget" type="number" value="35"></div></div>
+  <div class="control-buttons"><button class="btn primary" id="startBin">Start Search</button><button class="btn" id="nextBin">Next Iteration</button><button class="btn" id="resetBin">Reset</button><button class="btn" id="randomBin">Sorted Random Array</button></div>
+  <div class="notice" id="binNotice"></div>
+  <div class="visual"><div class="array-strip" id="binCells"></div><div class="legend"><span><i style="background:var(--good)"></i> LOW</span><span><i style="background:var(--accent2)"></i> MID</span><span><i style="background:var(--bad)"></i> HIGH</span></div></div>
+  <div class="step-panel"><div class="step-box"><div class="step-title" id="binStepTitle">Ready</div><div class="step-text" id="binStepText">LOW, MID and HIGH will update after every iteration.</div><div class="progress"><span id="binProgress"></span></div></div><div class="side-stat"><span class="muted">Iterations</span><b id="binCount">0</b><span class="muted">Comparisons: <b id="binComparisons">0</b></span></div></div>
+ </div>
+ <div class="grid grid-2" style="margin-top:18px"><div class="card"><h3>Why sorted?</h3><p>If the middle value is smaller than the target, every value to its left can be ignored. If it is larger, the right side can be ignored. Sorting gives the algorithm the information needed to discard half the range.</p></div><div class="card"><h3>Complexity</h3><p>Best case <span class="badge">O(1)</span>, average and worst case <span class="badge">O(log n)</span>, extra space <span class="badge">O(1)</span> for the iterative version.</p></div></div>
+</div>
+</section>
+
+<section id="complexity">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">07 · Algorithms & Complexity</div><h2>Understand performance at a glance.</h2><p class="lead">Big-O notation describes how the amount of work grows as the input becomes larger.</p></div></div>
+ <div class="table-wrap"><table class="table"><thead><tr><th>Operation</th><th>Best Case</th><th>Average Case</th><th>Worst Case</th><th>Space</th></tr></thead><tbody>
+ <tr><td>Array Insertion</td><td><span class="badge">O(1)</span></td><td><span class="badge">O(n)</span></td><td><span class="badge">O(n)</span></td><td><span class="badge">O(1)</span></td></tr>
+ <tr><td>Array Deletion</td><td><span class="badge">O(1)</span></td><td><span class="badge">O(n)</span></td><td><span class="badge">O(n)</span></td><td><span class="badge">O(1)</span></td></tr>
+ <tr><td>Linear Search</td><td><span class="badge">O(1)</span></td><td><span class="badge">O(n)</span></td><td><span class="badge">O(n)</span></td><td><span class="badge">O(1)</span></td></tr>
+ <tr><td>Binary Search</td><td><span class="badge">O(1)</span></td><td><span class="badge">O(log n)</span></td><td><span class="badge">O(log n)</span></td><td><span class="badge">O(1)</span></td></tr>
+ </tbody></table></div>
+ <div class="big-o" style="margin-top:18px">
+  <div class="complexity-card"><div class="o">O(1)</div><p>Constant time — work stays roughly the same as input grows.</p><div class="bar"><i style="width:18%"></i></div><small class="muted">Example: direct array access</small></div>
+  <div class="complexity-card"><div class="o">O(log n)</div><p>Logarithmic — the search space shrinks rapidly.</p><div class="bar"><i style="width:45%"></i></div><small class="muted">Example: binary search</small></div>
+  <div class="complexity-card"><div class="o">O(n)</div><p>Linear — work grows with the number of elements.</p><div class="bar"><i style="width:85%"></i></div><small class="muted">Example: linear search</small></div>
+ </div>
+ <div class="grid grid-2" style="margin-top:18px">
+  <div class="card"><h3>Quick rule</h3><p><b>O(1)</b> → jump directly. <b>O(log n)</b> → repeatedly reduce the problem. <b>O(n)</b> → potentially inspect every item.</p></div>
+  <div class="card"><h3>Applications</h3><p>Arrays appear in tables, sensor samples, image pixels, marks lists, buffers, and many other systems where indexed data is useful.</p></div>
+ </div>
+</div>
+</section>
+
+<section id="credits">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">08 · About / Credits</div><h2>A project built for understanding.</h2><p class="lead">This interactive learning platform demonstrates fundamental Data Structures and Algorithms concepts through practical visual simulations.</p></div></div>
+ <div class="grid grid-2">
+  <div class="card"><h3>About the Project</h3><p>The purpose of this project is to make algorithmic concepts easier to understand by combining theoretical explanations with practical visual demonstrations. It focuses on array address calculation, insertion, deletion, linear search, and binary search.</p><p>All simulations run directly in the browser, so the project requires no backend, database, or installation.</p></div>
+  <div class="card"><h3>Academic Details</h3><p><b>Subject:</b> Data Structures and Algorithms (DSA)</p><p><b>Project:</b> Interactive Array Operations and Searching Algorithms Simulator</p><p><b>Student:</b> Himanshu Saraf</p><p><b>Faculty:</b> Prof. Shilpa Bhalero</p></div>
+ </div>
+ <div class="card" style="margin-top:18px"><h3>Core Pseudocode</h3><div class="code-copy"><button class="btn copy-btn" id="copyCode">Copy</button><pre id="pseudo">LINEAR-SEARCH(A, target)
+1. for i = 0 to n - 1
+2.     compare A[i] with target
+3.     if A[i] == target, return i
+4. return NOT FOUND
+
+BINARY-SEARCH(A, target)
+1. low = 0, high = n - 1
+2. while low <= high
+3.     mid = floor((low + high) / 2)
+4.     if A[mid] == target, return mid
+5.     if A[mid] < target, low = mid + 1
+6.     else high = mid - 1
+7. return NOT FOUND</pre></div></div>
+ </div>
+</section>
+</main>
+
+<footer>
+ <div class="container footer-grid">
+  <div><div class="footer-title">Data Structures & Algorithms</div><div>Interactive Array Operations & Searching Simulator</div></div>
+  <div>Designed & Developed by: <b>Himanshu Saraf</b><br>Under the Guidance of: <b>Prof. Shilpa Bhalero</b></div>
+ </div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+function parseArray(id){
+  const raw=$(id).value.trim();
+  if(!raw) throw new Error("Please enter an array.");
+  const parts=raw.split(",");
+  const arr=parts.map(x=>x.trim()).map(x=>{
+    if(x==="") throw new Error("Array contains an empty value.");
+    const n=Number(x); if(!Number.isFinite(n)) throw new Error("Every array value must be a valid number.");
+    return n;
+  });
+  if(arr.length>30) throw new Error("Please use 30 or fewer elements for the visualization.");
+  return arr;
+}
+function notice(id,msg,type="info"){const el=$(id);el.textContent=msg;el.className="notice show "+type}
+function clearNotice(id){$(id).className="notice"}
+function renderArray(id,arr,opts={}){
+  const el=$(id);el.innerHTML="";
+  arr.forEach((v,i)=>{
+    const c=document.createElement("div"); c.className="cell";
+    if(opts.current===i)c.classList.add("current");
+    if(opts.shift===i)c.classList.add("shift");
+    if(opts.found===i)c.classList.add("found");
+    if(opts.low===i)c.classList.add("low");
+    if(opts.mid===i)c.classList.add("mid");
+    if(opts.high===i)c.classList.add("high");
+    c.innerHTML=`<span class="idx">${i}</span><span class="val">${v}</span>`;
+    el.appendChild(c);
+  });
+}
+function setProgress(id,cur,total){$(id).style.width=(total?Math.min(100,cur/total*100):0)+"%"}
+
+// Theme / navigation
+$("themeBtn").onclick=()=>{const light=document.body.dataset.theme==="light";document.body.dataset.theme=light?"":"light";$("themeBtn").textContent=light?"☼":"☾"};
+$("menuBtn").onclick=()=>{const n=$("navLinks");n.style.display=n.style.display==="flex"?"none":"flex";n.style.position="absolute";n.style.top="72px";n.style.left="4%";n.style.right="4%";n.style.padding="10px";n.style.background="var(--surface)";n.style.border="1px solid var(--line)";n.style.borderRadius="15px";n.style.flexDirection="column";n.style.alignItems="stretch"};
+document.querySelectorAll(".nav-links a").forEach(a=>a.addEventListener("click",()=>{if(innerWidth<901)$("navLinks").style.display="none"}));
+
+// Address calculator
+function addressCalc(){
+ try{
+  const base=Number($("base").value), size=Number($("esize").value), idx=Number($("aindex").value), lb=Number($("lower").value);
+  if(![base,size,idx,lb].every(Number.isFinite)||size<=0)throw new Error("Enter valid numbers. Element size must be greater than 0.");
+  const addr=base+(idx-lb)*size;
+  $("addressResult").textContent=addr;
+  $("addressFormula").innerHTML=`Address(A[${idx}]) = ${base} + (${idx} − ${lb}) × ${size} = <b>${addr}</b>`;
+  $("addressStepTitle").textContent="Calculation complete";
+  $("addressStepText").textContent=`Offset = (${idx} − ${lb}) = ${idx-lb}; Address = ${base} + ${(idx-lb)*size} = ${addr}.`;
+  setProgress("addressProgress",1,1);
+  const start=idx-3; const arr=Array.from({length:8},(_,i)=>start+i);
+  const mem=$("memoryCells");mem.innerHTML="";
+  arr.forEach(i=>{const m=document.createElement("div");m.className="mem"+(i===idx?" active":"");m.innerHTML=`<span>Index ${i}</span><b>${base+(i-lb)*size}</b>`;mem.appendChild(m)});
+  notice("addressNotice","Address calculated successfully.","success");
+ }catch(e){notice("addressNotice",e.message,"error")}
+}
+$("calcAddress").onclick=addressCalc;
+$("resetAddress").onclick=()=>{["base","esize","aindex","lower"].forEach((id,i)=>$(id).value=[1000,4,3,0][i]);$("addressResult").textContent="—";$("addressFormula").textContent="Address(A[i]) = Base + (i − Lower Bound) × Element Size";$("addressStepTitle").textContent="Ready to calculate";$("addressStepText").textContent="Enter values and press Calculate Address.";setProgress("addressProgress",0,1);$("memoryCells").innerHTML="";clearNotice("addressNotice")};
+
+// Insertion
+let ins={};
+function resetInsView(){try{const a=parseArray("insArray");renderArray("insCells",a)}catch(e){renderArray("insCells",[]) } $("insCount").textContent="0 / 0";$("insStepTitle").textContent="Ready";$("insStepText").textContent="Start the simulation. Each Next Step advances one operation.";setProgress("insProgress",0,1)}
+function startIns(){
+ try{
+  const a=parseArray("insArray"),pos=Number($("insPos").value),val=Number($("insVal").value);
+  if(!Number.isInteger(pos)||pos<0||pos>a.length)throw new Error(`Position must be an integer from 0 to ${a.length}.`);
+  if(!Number.isFinite(val))throw new Error("New element must be a valid number.");
+  ins={original:a.slice(),work:a.slice(),pos,val,step:0,total:a.length-pos+1,done:false};
+  renderArray("insCells",a,{current:pos});$("insCount").textContent=`0 / ${ins.total}`;$("insStepTitle").textContent="Simulation started";$("insStepText").textContent=`We need to create a gap at index ${pos}. Elements at and after this position will shift right.`;setProgress("insProgress",0,ins.total);notice("insNotice","Insertion simulation ready. Press Next Step to continue.","success");
+ }catch(e){notice("insNotice",e.message,"error")}
+}
+function nextIns(){
+ if(!ins.original){startIns();return} if(ins.done)return;
+ const p=ins.pos;
+ if(ins.step<ins.original.length-p){
+   const from=ins.original.length-1-ins.step;
+   ins.work.splice(from+1,0,ins.work[from]);
+   renderArray("insCells",ins.work,{shift:from+1});
+   ins.step++;$("insCount").textContent=`${ins.step} / ${ins.total}`;setProgress("insProgress",ins.step,ins.total);
+   $("insStepTitle").textContent=`Shift ${from} → ${from+1}`;
+   $("insStepText").textContent=`Move ${ins.work[from+1]} one position to the right to make room for the new element.`;
+ }else{
+   ins.work.splice(p,0,ins.val);ins.done=true;ins.step++;
+   renderArray("insCells",ins.work,{found:p});$("insCount").textContent=`${ins.step} / ${ins.total}`;setProgress("insProgress",ins.step,ins.total);
+   $("insStepTitle").textContent="Insertion complete";$("insStepText").textContent=`Placed ${ins.val} at index ${p}. Final array is ready.`;notice("insNotice","Insertion completed successfully.","success");
+ }
+}
+$("startIns").onclick=startIns;$("nextIns").onclick=nextIns;$("resetIns").onclick=()=>{ins={};resetInsView();clearNotice("insNotice")};
+$("randomIns").onclick=()=>{$("insArray").value=Array.from({length:6},()=>Math.floor(Math.random()*90)+10).join(", ");$("insPos").value=2;$("insVal").value=Math.floor(Math.random()*90)+10;resetInsView()};resetInsView();
+
+// Deletion
+let del={};
+function resetDelView(){try{renderArray("delCells",parseArray("delArray"))}catch(e){renderArray("delCells",[])}$("delCount").textContent="0 / 0";$("delStepTitle").textContent="Ready";$("delStepText").textContent="Start the simulation to visualize left-shifting.";setProgress("delProgress",0,1)}
+function startDel(){
+ try{
+  const a=parseArray("delArray"),pos=Number($("delPos").value);
+  if(!Number.isInteger(pos)||pos<0||pos>=a.length)throw new Error(`Delete index must be an integer from 0 to ${a.length-1}.`);
+  del={original:a.slice(),work:a.slice(),pos,step:0,total:a.length-pos,done:false};
+  renderArray("delCells",a,{current:pos});$("delCount").textContent=`0 / ${del.total}`;$("delStepTitle").textContent=`Selected index ${pos}`;$("delStepText").textContent=`Element ${a[pos]} will be removed. Following elements will shift left.`;setProgress("delProgress",0,del.total);notice("delNotice","Deletion simulation ready.","success");
+ }catch(e){notice("delNotice",e.message,"error")}
+}
+function nextDel(){
+ if(!del.original){startDel();return} if(del.done)return;
+ const p=del.pos;
+ if(del.step<del.original.length-p-1){
+   const from=p+1+del.step;del.work[from-1]=del.work[from];
+   renderArray("delCells",del.work,{shift:from-1});del.step++;
+   $("delCount").textContent=`${del.step} / ${del.total}`;setProgress("delProgress",del.step,del.total);
+   $("delStepTitle").textContent=`Shift ${from} → ${from-1}`;$("delStepText").textContent=`Move ${del.work[from-1]} one position left to fill the gap.`;
+ }else{
+   del.work.length--;del.done=true;del.step++;
+   renderArray("delCells",del.work);$("delCount").textContent=`${del.step} / ${del.total}`;setProgress("delProgress",del.step,del.total);
+   $("delStepTitle").textContent="Deletion complete";$("delStepText").textContent=`Removed the selected element and compacted the array.`;notice("delNotice","Deletion completed successfully.","success");
+ }
+}
+$("startDel").onclick=startDel;$("nextDel").onclick=nextDel;$("resetDel").onclick=()=>{del={};resetDelView();clearNotice("delNotice")};
+$("randomDel").onclick=()=>{$("delArray").value=Array.from({length:7},()=>Math.floor(Math.random()*90)+10).join(", ");$("delPos").value=3;resetDelView()};resetDelView();
+
+// Linear search
+let lin={};
+function resetLinView(){try{renderArray("linCells",parseArray("linArray"))}catch(e){renderArray("linCells",[])}$("linCount").textContent="0";$("linResult").textContent="Not started";$("linStepTitle").textContent="Ready";$("linStepText").textContent="Start and move one comparison at a time.";setProgress("linProgress",0,1)}
+function startLin(){
+ try{const a=parseArray("linArray"),target=Number($("linTarget").value);if(!Number.isFinite(target))throw new Error("Target must be a valid number.");lin={a,target,i:0,comparisons:0,done:false};renderArray("linCells",a);$("linCount").textContent="0";$("linResult").textContent="Searching…";$("linStepTitle").textContent="Search started";$("linStepText").textContent=`Begin at index 0 and compare each element with ${target}.`;setProgress("linProgress",0,a.length);notice("linNotice","Linear search ready.","success")}catch(e){notice("linNotice",e.message,"error")}}
+function nextLin(){
+ if(!lin.a){startLin();return}if(lin.done)return;
+ const i=lin.i,v=lin.a[i];lin.comparisons++;renderArray("linCells",lin.a,{current:i});
+ $("linCount").textContent=lin.comparisons;setProgress("linProgress",i+1,lin.a.length);
+ if(v===lin.target){renderArray("linCells",lin.a,{found:i});lin.done=true;$("linResult").textContent=`Found at index ${i}`;$("linStepTitle").textContent="Target found";$("linStepText").textContent=`Comparison ${lin.comparisons}: ${v} equals ${lin.target}.`;notice("linNotice",`Found ${lin.target} at index ${i} after ${lin.comparisons} comparison(s).`,"success")}
+ else if(i===lin.a.length-1){lin.done=true;$("linResult").textContent="Not found";$("linStepTitle").textContent="Target not found";$("linStepText").textContent=`${v} is not ${lin.target}; every element has now been checked.`;notice("linNotice",`${lin.target} is not present in the array.`,"error")}
+ else{$("linStepTitle").textContent=`Compare index ${i}`;$("linStepText").textContent=`${v} ≠ ${lin.target}. Move to index ${i+1}.`;lin.i++}
+}
+$("startLin").onclick=startLin;$("nextLin").onclick=nextLin;$("resetLin").onclick=()=>{lin={};resetLinView();clearNotice("linNotice")};
+$("randomLin").onclick=()=>{$("linArray").value=Array.from({length:8},()=>Math.floor(Math.random()*80)+1).join(", ");$("linTarget").value=Math.floor(Math.random()*80)+1;resetLinView()};resetLinView();
+
+// Binary search
+let bin={};
+function isSorted(a){for(let i=1;i<a.length;i++)if(a[i]<a[i-1])return false;return true}
+function resetBinView(){try{renderArray("binCells",parseArray("binArray"))}catch(e){renderArray("binCells",[])}$("binCount").textContent="0";$("binComparisons").textContent="0";$("binStepTitle").textContent="Ready";$("binStepText").textContent="LOW, MID and HIGH will update after every iteration.";setProgress("binProgress",0,1)}
+function startBin(){
+ try{const a=parseArray("binArray"),target=Number($("binTarget").value);if(!Number.isFinite(target))throw new Error("Target must be a valid number.");if(!isSorted(a))throw new Error("Binary search requires a sorted array. Please sort the values in ascending order.");bin={a,target,low:0,high:a.length-1,iterations:0,comparisons:0,done:false};renderArray("binCells",a,{low:0,high:a.length-1});$("binCount").textContent="0";$("binComparisons").textContent="0";$("binStepTitle").textContent="Search started";$("binStepText").textContent=`Search range is index 0 to ${a.length-1}.`;setProgress("binProgress",0,Math.ceil(Math.log2(a.length+1)));notice("binNotice","Sorted array validated. Binary search ready.","success")}catch(e){notice("binNotice",e.message,"error")}}
+function nextBin(){
+ if(!bin.a){startBin();return}if(bin.done)return;
+ if(bin.low>bin.high){bin.done=true;$("binStepTitle").textContent="Target not found";$("binStepText").textContent="LOW crossed HIGH, so no search positions remain.";notice("binNotice",`${bin.target} is not present in the array.`,"error");return}
+ const mid=Math.floor((bin.low+bin.high)/2),v=bin.a[mid];bin.iterations++;bin.comparisons++;
+ renderArray("binCells",bin.a,{low:bin.low,mid,high:bin.high});
+ $("binCount").textContent=bin.iterations;$("binComparisons").textContent=bin.comparisons;setProgress("binProgress",bin.iterations,Math.ceil(Math.log2(bin.a.length+1)));
+ if(v===bin.target){bin.done=true;$("binStepTitle").textContent=`Found at index ${mid}`;$("binStepText").textContent=`A[${mid}] = ${v} equals ${bin.target}. Search stops.`;renderArray("binCells",bin.a,{found:mid});notice("binNotice",`Found ${bin.target} at index ${mid} in ${bin.iterations} iteration(s).`,"success")}
+ else if(v<bin.target){$("binStepTitle").textContent=`${v} < ${bin.target}`;$("binStepText").textContent=`The middle value is smaller than the target, so discard the left half. LOW becomes ${mid+1}.`;bin.low=mid+1}
+ else{$("binStepTitle").textContent=`${v} > ${bin.target}`;$("binStepText").textContent=`The middle value is larger than the target, so discard the right half. HIGH becomes ${mid-1}.`;bin.high=mid-1}
+}
+$("startBin").onclick=startBin;$("nextBin").onclick=nextBin;$("resetBin").onclick=()=>{bin={};resetBinView();clearNotice("binNotice")};
+$("randomBin").onclick=()=>{let a=Array.from({length:9},()=>Math.floor(Math.random()*90)+5).sort((x,y)=>x-y);a=[...new Set(a)];$("binArray").value=a.join(", ");$("binTarget").value=a[Math.floor(Math.random()*a.length)];resetBinView()};resetBinView();
+
+// Copy pseudocode
+$("copyCode").onclick=async()=>{try{await navigator.clipboard.writeText($("pseudo").textContent);$("copyCode").textContent="Copied ✓";setTimeout(()=>$("copyCode").textContent="Copy",1300)}catch(e){$("copyCode").textContent="Select & copy"}};
+
+// Active nav highlight
+const links=[...document.querySelectorAll(".nav-links a")], sections=[...document.querySelectorAll("main section")];
+const obs=new IntersectionObserver(entries=>entries.forEach(en=>{if(en.isIntersecting){links.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+en.target.id))}}),{rootMargin:"-25% 0px -65% 0px"});
+sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
